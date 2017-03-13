@@ -25,3 +25,7 @@ func makeIDGenerator() func() string {
 		return fmt.Sprintf("%s-%06d", prefix, id)
 	}
 }
+
+func NewID() string {
+	return newID()
+}

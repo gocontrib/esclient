@@ -131,7 +131,8 @@ func (c *Client) Push(indexName string, rec Record) error {
 func (c *Client) BulkText(indexName string, messages []string) error {
 	var buf bytes.Buffer
 	for _, msg := range messages {
-		buf.WriteString(c.bulkMeta(indexName, newID()))
+		id := msgID(msg)
+		buf.WriteString(c.bulkMeta(indexName, id))
 		buf.WriteString(msg)
 		buf.WriteString("\n")
 	}
@@ -155,6 +156,15 @@ func (c *Client) Bulk(indexName string, records []Record) error {
 	data := buf.Bytes()
 	body := bytes.NewReader(data)
 	return c.HTTP.Post("_bulk", body, nil)
+}
+
+func msgID(msg string) string {
+	rec := make(Record)
+	err := json.Unmarshal([]byte(msg), &rec)
+	if err == nil {
+		return recID(rec)
+	}
+	return newID()
 }
 
 func recID(rec Record) string {
