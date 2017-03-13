@@ -16,23 +16,30 @@ import (
 type Record map[string]interface{}
 
 type Config struct {
-	URL      string
-	Username string
-	Password string
-	Verbose  bool
-	Timeout  int64
+	URL       string
+	Username  string
+	Password  string
+	Verbose   bool
+	Timeout   int64
+	IndexName string
+	DocType   string
 }
 
 type Client struct {
-	client    *rest.Client
+	HTTP      *rest.Client
 	IndexName string
-	docType   string
+	DocType   string
 }
 
 func NewClient(config Config) *Client {
 	token := ""
 	if len(config.Username) > 0 {
 		token = rest.BasicAuth(config.Username, config.Password)
+	}
+
+	docType := config.DocType
+	if len(docType) == 0 {
+		docType = "logs"
 	}
 
 	if config.Verbose {
@@ -47,8 +54,9 @@ func NewClient(config Config) *Client {
 	})
 
 	return &Client{
-		client:  client,
-		docType: "logs",
+		HTTP:      client,
+		IndexName: config.IndexName,
+		DocType:   docType,
 	}
 }
 
@@ -62,12 +70,12 @@ func (c *Client) CreateTemplateFromFile(filename string) error {
 }
 
 func (c *Client) CreateTemplate(template io.Reader) error {
-	return c.client.Put("_template/velocity", template, nil)
+	return c.HTTP.Put("_template/velocity", template, nil)
 }
 
 func (c *Client) IndexExists(name string) bool {
 	result := make(map[string]interface{})
-	err := c.client.Get(fmt.Sprintf("%s/_settings", name), &result)
+	err := c.HTTP.Get(fmt.Sprintf("%s/_settings", name), &result)
 	if err != nil {
 		return false
 	}
@@ -76,11 +84,11 @@ func (c *Client) IndexExists(name string) bool {
 }
 
 func (c *Client) CreateIndex(name string) error {
-	return c.client.Put(name, nil, nil)
+	return c.HTTP.Put(name, nil, nil)
 }
 
 func (c *Client) DeleteIndex(name string) error {
-	return c.client.Delete(name)
+	return c.HTTP.Delete(name)
 }
 
 func (c *Client) SetRefreshInterval(indexName, interval string) error {
@@ -89,7 +97,7 @@ func (c *Client) SetRefreshInterval(indexName, interval string) error {
 			"refresh_interval": interval,
 		},
 	}
-	return c.client.Put(fmt.Sprintf("%s/_settings", indexName), &payload, nil)
+	return c.HTTP.Put(fmt.Sprintf("%s/_settings", indexName), &payload, nil)
 }
 
 func (c *Client) DisableIndexing(indexName string) error {
@@ -104,9 +112,9 @@ func (c *Client) PushRaw(indexName, message string, id string) error {
 	if len(id) == 0 {
 		id = newID()
 	}
-	url := fmt.Sprintf("%s/%s/%s", indexName, c.docType, id)
+	url := fmt.Sprintf("%s/%s/%s", indexName, c.DocType, id)
 	body := strings.NewReader(message)
-	return c.client.Put(url, body, nil)
+	return c.HTTP.Put(url, body, nil)
 }
 
 func (c *Client) Push(indexName string, rec Record) error {
@@ -115,9 +123,9 @@ func (c *Client) Push(indexName string, rec Record) error {
 		panic(err)
 	}
 	id := recID(rec)
-	url := fmt.Sprintf("%s/%s/%s", indexName, c.docType, id)
+	url := fmt.Sprintf("%s/%s/%s", indexName, c.DocType, id)
 	body := bytes.NewReader(msg)
-	return c.client.Put(url, body, nil)
+	return c.HTTP.Put(url, body, nil)
 }
 
 func (c *Client) BulkText(indexName string, messages []string) error {
@@ -129,7 +137,7 @@ func (c *Client) BulkText(indexName string, messages []string) error {
 	}
 	data := buf.Bytes()
 	body := bytes.NewReader(data)
-	return c.client.Post("_bulk", body, nil)
+	return c.HTTP.Post("_bulk", body, nil)
 }
 
 func (c *Client) Bulk(indexName string, records []Record) error {
@@ -146,7 +154,7 @@ func (c *Client) Bulk(indexName string, records []Record) error {
 	}
 	data := buf.Bytes()
 	body := bytes.NewReader(data)
-	return c.client.Post("_bulk", body, nil)
+	return c.HTTP.Post("_bulk", body, nil)
 }
 
 func recID(rec Record) string {
@@ -165,7 +173,7 @@ func recID(rec Record) string {
 }
 
 func (c *Client) bulkMeta(indexName, id string) string {
-	return fmt.Sprintf("{\"index\":{\"_index\":\"%s\",\"_type\":\"%s\",\"_id\":\"%s\"}}\n", indexName, c.docType, id)
+	return fmt.Sprintf("{\"index\":{\"_index\":\"%s\",\"_type\":\"%s\",\"_id\":\"%s\"}}\n", indexName, c.DocType, id)
 }
 
 func (c *Client) BulkOp(fn func()) {
