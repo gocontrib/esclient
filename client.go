@@ -118,6 +118,5 @@ func (c *Client) Push(indexName string, rec Record) error {
 	if err != nil {
 		return err
 	}
-	id := recID(rec)
-	return c.PushRaw(indexName, bytes.NewReader(msg), id)
+	return c.PushRaw(indexName, bytes.NewReader(msg), recID(rec))
 }
