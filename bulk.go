@@ -1,12 +1,12 @@
 package esclient
 
 import (
-	"io"
-	"sync"
 	"bytes"
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"io"
 	"strings"
+	"sync"
 
 	"github.com/gocontrib/parse"
 )

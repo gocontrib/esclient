@@ -44,7 +44,7 @@ func NewClient(config Config) *Client {
 		Token:      token,
 		AuthScheme: "Basic",
 		Timeout:    config.Timeout,
-		Verbose: config.Verbose,
+		Verbose:    config.Verbose,
 	})
 
 	return &Client{
