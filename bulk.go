@@ -50,7 +50,20 @@ func msgID(msg string) string {
 	return newID()
 }
 
-func recID(rec Record) string {
+func docID(v interface{}) string {
+	rec, ok := v.(map[string]interface{})
+	if ok {
+		return recID(rec)
+	}
+	rec2, ok := v.(*map[string]interface{})
+	if ok {
+		return recID(*rec2)
+	}
+	// TODO get id with reflection
+	return newID()
+}
+
+func recID(rec map[string]interface{}) string {
 	id, ok := rec["request_id"]
 	if !ok {
 		id, ok = rec["id"]

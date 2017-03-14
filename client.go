@@ -102,18 +102,18 @@ func (c *Client) EnableIndexing(indexName string) error {
 	return c.SetRefreshInterval(indexName, "1s")
 }
 
-func (c *Client) PushRaw(indexName string, message io.Reader, id string) error {
+func (c *Client) PushRaw(indexName string, doc io.Reader, id string) error {
 	if len(id) == 0 {
 		id = newID()
 	}
 	url := fmt.Sprintf("%s/%s/%s", indexName, c.DocType, id)
-	return c.HTTP.Put(url, message, nil)
+	return c.HTTP.Put(url, doc, nil)
 }
 
-func (c *Client) Push(indexName string, rec Record) error {
-	msg, err := json.Marshal(&rec)
+func (c *Client) Push(indexName string, doc interface{}) error {
+	msg, err := json.Marshal(doc)
 	if err != nil {
 		return err
 	}
-	return c.PushRaw(indexName, bytes.NewReader(msg), recID(rec))
+	return c.PushRaw(indexName, bytes.NewReader(msg), docID(doc))
 }
