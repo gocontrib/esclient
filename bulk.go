@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"fmt"
 	"encoding/json"
+	"strings"
 
 	"github.com/gocontrib/parse"
 )
@@ -93,7 +94,7 @@ func (c *Client) PushMessages(in io.Reader, nobulk bool) {
 			if !ok {
 				break
 			}
-			err := c.PushRaw(c.IndexName, line, newID())
+			err := c.PushRaw(c.IndexName, strings.NewReader(line), newID())
 			if err != nil {
 				panic(err)
 			}
