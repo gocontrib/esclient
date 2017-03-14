@@ -18,10 +18,10 @@ func (c *Client) Search(indexName string, request *SearchRequest, params *Search
 
 type SearchRequest struct {
 	Query          map[string]interface{} `json:"query"`
-	From           int64                  `json:"from,omitempty"`
-	Size           int64                  `json:"size,omitempty"`
-	Timeout        *int64                 `json:"timeout,omitempty"`
-	TerminateAfter *int64                 `json:"terminate_after,omitempty"`
+	From           int                    `json:"from,omitempty"`
+	Size           int                    `json:"size,omitempty"`
+	Timeout        *int                   `json:"timeout,omitempty"`
+	TerminateAfter *int                   `json:"terminate_after,omitempty"`
 }
 
 type SearchParams struct {
@@ -55,7 +55,7 @@ type SearchResult struct {
 }
 
 type Hits struct {
-	Total    int64   `json:"total"`
+	Total    int     `json:"total"`
 	MaxScope float64 `json:"max_score"`
 	Hits     []*Hit  `json:"hits"`
 }
