@@ -39,15 +39,12 @@ func NewClient(config Config) *Client {
 		docType = "logs"
 	}
 
-	if config.Verbose {
-		rest.SetVerbose(true)
-	}
-
 	client := rest.NewClient(rest.Config{
 		BaseURL:    config.URL,
 		Token:      token,
 		AuthScheme: "Basic",
 		Timeout:    config.Timeout,
+		Verbose: config.Verbose,
 	})
 
 	return &Client{
