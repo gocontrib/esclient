@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/gocontrib/rest"
 )
@@ -52,19 +51,6 @@ func NewClient(config Config) *Client {
 		IndexName: config.IndexName,
 		DocType:   docType,
 	}
-}
-
-func (c *Client) CreateTemplateFromFile(filename string) error {
-	f, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	return c.CreateTemplate(f)
-}
-
-func (c *Client) CreateTemplate(template io.Reader) error {
-	return c.HTTP.Put("_template/velocity", template, nil)
 }
 
 func (c *Client) IndexExists(name string) bool {
