@@ -28,9 +28,10 @@ type Client struct {
 }
 
 func NewClient(config Config) *Client {
-	token := ""
+	auth := ""
 	if len(config.Username) > 0 {
-		token = rest.BasicAuth(config.Username, config.Password)
+		token := rest.BasicAuth(config.Username, config.Password)
+		auth = "Basic " + token
 	}
 
 	docType := config.DocType
@@ -39,11 +40,10 @@ func NewClient(config Config) *Client {
 	}
 
 	client := rest.NewClient(rest.Config{
-		BaseURL:    config.URL,
-		Token:      token,
-		AuthScheme: "Basic",
-		Timeout:    config.Timeout,
-		Verbose:    config.Verbose,
+		BaseURL:       config.URL,
+		Authorization: auth,
+		Timeout:       config.Timeout,
+		Verbose:       config.Verbose,
 	})
 
 	return &Client{
