@@ -96,10 +96,13 @@ func (c *Client) PushRaw(indexName string, doc io.Reader, id string) error {
 	return c.HTTP.Put(url, doc, nil)
 }
 
-func (c *Client) Push(indexName string, doc interface{}) error {
+func (c *Client) Push(indexName string, doc interface{}, id string) error {
 	msg, err := json.Marshal(doc)
 	if err != nil {
 		return err
 	}
-	return c.PushRaw(indexName, bytes.NewReader(msg), docID(doc))
+	if len(id) == 0 {
+		id = docID(doc)
+	}
+	return c.PushRaw(indexName, bytes.NewReader(msg), id)
 }

@@ -64,18 +64,28 @@ func docID(v interface{}) string {
 }
 
 func recID(rec map[string]interface{}) string {
-	id, ok := rec["request_id"]
-	if !ok {
-		id, ok = rec["id"]
-		if !ok {
-			return newID()
-		}
-	}
+	id := recIDRaw(rec)
 	s, ok := id.(string)
 	if ok {
 		return s
 	}
 	return newID()
+}
+
+func recIDRaw(rec map[string]interface{}) interface{} {
+	id, ok := rec["request_id"]
+	if ok {
+		return id
+	}
+	id, ok = rec["id"]
+	if ok {
+		return id
+	}
+	id, ok = rec["uid"]
+	if ok {
+		return id
+	}
+	return nil
 }
 
 func (c *Client) bulkMeta(indexName, id string) string {
